@@ -1,0 +1,8 @@
+# ADMINISTRAÇÃO
+	Adicionar campos de formas de parcelamento: Parcelado Emissor, Parcelado Estabelecimento, etc.
+	Adicionar campo de Taxa de Juros caso Parcelado Estabelecimento seja escolhido.
+
+	Adicionar campos para templates de e-mail de erros ou status da transação com suporte a HTML.
+
+
+# Front-end

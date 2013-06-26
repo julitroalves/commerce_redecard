@@ -1,0 +1,9 @@
+name = RedeCard Cartões
+description = Provides a payment method for RedeCard.
+package = Commerce
+dependencies[] = commerce
+dependencies[] = commerce_payment
+core = 7.x
+
+; Base module files
+files[] = commerce_redecard.module
