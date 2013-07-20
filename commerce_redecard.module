@@ -36,6 +36,7 @@ function commerce_redecard_menu() {
  * @see http://www.redecard.com.br
  */
 function commerce_redecard_process_notification() {
+
   // If received a POST is a notification API request from Pagseguro.
   if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
@@ -93,7 +94,6 @@ function commerce_redecard_process_notification() {
 
       //load payment method settings
       $payment_method = commerce_payment_method_instance_load('redecard|commerce_payment_redecard');
-
 
       $order_total = $order->commerce_order_total[LANGUAGE_NONE][0]['amount'];
       $order_payment_values = $order->data['commerce_redecard_options'];
@@ -169,7 +169,6 @@ function commerce_redecard_process_notification() {
           _commerce_redecard_transaction_missing_data($order);
           break;
       }
-      
     }
   }
 }
@@ -237,9 +236,9 @@ function commerce_redecard_notify_user_order(&$order, $key_mail) {
 }
 
 function _commerce_redecard_order_data_get(&$order, &$variables) {
-  //Loading user data
+  // Loading user data
   $user = user_load($order->uid);
-  $full_name = $user->field_user_fullname[LANGUAGE_NONE][0]['value'];
+  $username = $user->name;
   $line_items_id = $order->commerce_line_items[LANGUAGE_NONE];
 
   $items_name = '';
@@ -247,24 +246,32 @@ function _commerce_redecard_order_data_get(&$order, &$variables) {
   foreach ($line_items_id as $value) {
     $line_items = commerce_line_item_load($value['line_item_id']);
 
-    if($line_items->type == 'commerce_coupon') {
-      $price = $line_items->commerce_unit_price[LANGUAGE_NONE][0]['amount'];
-      $items_name .= '<p>Cupom de Desconto - R$ ' . number_format(abs(commerce_currency_amount_to_decimal($price, 'BRL')), 2, ',', '.') . '</p>';
-      continue;
+    if ($line_items->type == 'commerce_product') {
+      $product_id = $line_items->commerce_product[LANGUAGE_NONE][0]['product_id'];
+      
+      $product = commerce_product_load($product_id);
+      $price = $product->commerce_price[LANGUAGE_NONE][0]['amount'];
+      $price_formatted = number_format(abs(commerce_currency_amount_to_decimal($price, 'BRL')), 2, ',', '.');
+      $items_name .= '<p class="product-line-item">' . $product->title . ' - R$ ' . $price_formatted . '</p>';
+    
+      unset($line_items, $product);
     }
-    $product_id = $line_items->commerce_product[LANGUAGE_NONE][0]['product_id'];
-    
-    $product = commerce_product_load($product_id);
-    $price = $product->commerce_price[LANGUAGE_NONE][0]['amount'];
-    $items_name .= '<p>' . $product->title .' - R$ '. number_format(abs(commerce_currency_amount_to_decimal($price, 'BRL')), 2, ',', '.') . '</p>';
-    
-    unset($line_items, $product);
   }
-  $total_order = number_format(abs(commerce_currency_amount_to_decimal($order->commerce_order_total[LANGUAGE_NONE][0]['amount'], 'BRL')), 2, ',', '.');
+  $total_order = number_format(
+    abs(
+      commerce_currency_amount_to_decimal(
+        $order->commerce_order_total[LANGUAGE_NONE][0]['amount'], 
+        'BRL'
+      )
+    ), 
+    2, 
+    ',', 
+    '.'
+  );
 
   $variables += array(
-    '@username' => $full_name,
-    '@mail' => $order->mail,
+    '@username' => $username,
+    '@usermail' => $order->mail,
     '@order_number' => $order->order_number,
     '@order_total_value' => 'R$ ' . $total_order,
     '!line_items' => $items_name,
@@ -275,109 +282,73 @@ function _commerce_redecard_order_data_get(&$order, &$variables) {
 * Callback function used in drupal_mail() to alter body and title of the email.
 **/
 function send_notifications_redecard_mail($key, &$message, $params) {
-  $variables = array();
   $message['headers']['Content-Type'] = 'text/html; charset=UTF-8; format=flowed';
+  $variables = array();
   $order = $params['order'];
-
+  
+  // Load payment method settings
+  $payment_method = commerce_payment_method_instance_load('redecard|commerce_payment_redecard');
+  
   $statuses = _commerce_redecard_statuses($key);
   $variables['@message_status'] = $statuses ? $statuses['msg'] : '';
+  $content = $payment_method['settings']['templates_email']['failure']['value'];
 
   switch ($key) {
     case 'missing_data_transaction':
-      _commerce_redecard_order_data_get($order, $variables);
       $message['subject'] = 'Dados Ausentes no Pagamento RedeCard';
-      $content = (file_get_contents(drupal_get_path('module', 'commerce_redecard') . '/commerce_redecard.template_email_order_failure.inc'));
-      $message['body'][] = t($content, $variables);
       break;
     case 'notfound_transaction':
-      _commerce_redecard_order_data_get($order, $variables);
       $message['subject'] = 'Transação não encontrada no Pagamento RedeCard';
-      $content = (file_get_contents(drupal_get_path('module', 'commerce_redecard') . '/commerce_redecard.template_email_order_failure.inc'));
-      $message['body'][] = t($content, $variables);
       break;
     case 'error_data': 
-      _commerce_redecard_order_data_get($order, $variables);
       $message['subject'] = 'Dados não coincidem no Pagamento RedeCard';
-      $content = (file_get_contents(drupal_get_path('module', 'commerce_redecard') . '/commerce_redecard.template_email_order_failure.inc'));
-      $message['body'][] = t($content, $variables);
       break;
     case 'reversed_transaction': 
-      _commerce_redecard_order_data_get($order, $variables);
       $message['subject'] = 'Transação foi Estornada no Pagamento RedeCard';
-
-      //TODO: ESTORNO DE TRANSAÇÃO DEVE CONTER OUTRO TEMPLATE DE EMAIL
-      $content = 'Olá, Sua transação foi estornada pelo processo de Estorno de Transação. <br /> N° do pedido: <b>@order_id</b>';
-      $message['body'][] = t($content, array('@order_id' => $order->order_number));
+      $content = $payment_method['settings']['templates_email']['reversed']['value'];
       break;
     case 'undone_transaction': 
-      _commerce_redecard_order_data_get($order, $variables);
       $message['subject'] = 'Transação Desfeita no Pagamento RedeCard';
-      $content = (file_get_contents(drupal_get_path('module', 'commerce_redecard') . '/commerce_redecard.template_email_order_failure.inc'));
-      $message['body'][] = t($content, $variables);
       break;
     case 'denied_transaction': 
-      _commerce_redecard_order_data_get($order, $variables);
       $message['subject'] = 'Transação Negada no Pagamento RedeCard';
-      $content = (file_get_contents(drupal_get_path('module', 'commerce_redecard') . '/commerce_redecard.template_email_order_failure.inc'));
-      $message['body'][] = t($content, $variables);
       break;
     case 'already_approved': 
-      _commerce_redecard_order_data_get($order, $variables);
       $message['subject'] = 'Transação Já Confirmada no Pagamento RedeCard';
-      $content = 'A transação já foi confirmada anteriormente; <br /> n° do pedido: <b>@order_id</b>';
-      $message['body'][] = t($content, array('@order_id' => $order->order_number));
+      $content = 'A transação já foi confirmada anteriormente; <br /> n° do pedido: <b>@order_number</b>';
       break;
     case 'unauthorized':
-      _commerce_redecard_order_data_get($order, $variables);
       $message['subject'] = 'Transação Não Autorizada';
-      $content = (file_get_contents(drupal_get_path('module', 'commerce_redecard') . '/commerce_redecard.template_email_order_failure.inc'));
-      $message['body'][] = t($content, $variables);
       break;
     case 'invalid_foundation':
-      _commerce_redecard_order_data_get($order, $variables);
       $message['subject'] = 'Estabelecimento Inválido';
-      $content = (file_get_contents(drupal_get_path('module', 'commerce_redecard') . '/commerce_redecard.template_email_order_failure.inc'));
-      $message['body'][] = t($content, $variables);
       break;
     case 'invalid_transaction':
-      _commerce_redecard_order_data_get($order, $variables);
       $message['subject'] = 'Transação Inválida';
-      $content = (file_get_contents(drupal_get_path('module', 'commerce_redecard') . '/commerce_redecard.template_email_order_failure.inc'));
-      $message['body'][] = t($content, $variables);
       break;
     case 'redo_transaction':
-      _commerce_redecard_order_data_get($order, $variables);
       $message['subject'] = 'Refaça sua Transação';
-      $content = (file_get_contents(drupal_get_path('module', 'commerce_redecard') . '/commerce_redecard.template_email_order_failure.inc'));
-      $message['body'][] = t($content, $variables);
       break;
     case 'error_card':
-      _commerce_redecard_order_data_get($order, $variables);
       $message['subject'] = 'Problemas com o Cartão';
-      $content = (file_get_contents(drupal_get_path('module', 'commerce_redecard') . '/commerce_redecard.template_email_order_failure.inc'));
-      $message['body'][] = t($content, $variables);
       break;
     case 'invalid_data':
-      _commerce_redecard_order_data_get($order, $variables);
       $message['subject'] = 'Dado Inválido';
-      $content = (file_get_contents(drupal_get_path('module', 'commerce_redecard') . '/commerce_redecard.template_email_order_failure.inc'));
-      $message['body'][] = t($content, $variables);
       break;
     case 'institution_without_communication':
-      _commerce_redecard_order_data_get($order, $variables);
       $message['subject'] = 'Urgente! Instituição sem Comunicação';
-      $content = 'A Instituição está sem comunicação; <br /> N° do pedido: <b>@order_id</b>';
-      $message['body'][] = t($content, array('@order_id' => $order->order_number));
       break;
     case 'error_bank':
-      _commerce_redecard_order_data_get($order, $variables);
       $message['subject'] = 'Banco não pertence à Rede';
-      $content = (file_get_contents(drupal_get_path('module', 'commerce_redecard') . '/commerce_redecard.template_email_order_failure.inc'));
-      $message['body'][] = t($content, $variables);
       break;
   }
+  // Fill array variables with token
+  _commerce_redecard_order_data_get($order, $variables);
 
-  unset($order, $user);
+  // Send $content to body of email
+  $message['body'][] = t($content, $variables);
+
+  unset($order);
 }
 
 /**
@@ -413,6 +384,10 @@ function commerce_redecard_settings_form($settings = NULL) {
     'urlfooter' => '',
     'avs' => '',
     'log_debug_info' => '',
+    'templates_email' =>
+      array('success' => ''),
+      array('failure' => ''),
+      array('reversed' => ''),
   );
 
   $form['filiation'] = array(
@@ -477,6 +452,33 @@ function commerce_redecard_settings_form($settings = NULL) {
     '#default_value' => $settings['log_debug_info'],
   );
 
+  $form['templates_email'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Templates de E-mail',
+    '#collapsible' => TRUE,
+  );
+  
+  $form['templates_email']['success'] = array(
+    '#type' => 'text_format',
+    '#title' => t('Success Email'),
+    '#default_value' => $settings['templates_email']['success']['value'],
+    '#description' => t('This field supports html format and plain text. You can use following token: @username, @usermail, @order_number, @order_total_value, !line_items, @message_status'),
+  );
+
+  $form['templates_email']['failure'] = array(
+    '#type' => 'text_format',
+    '#title' => t('Failure Email'),
+    '#default_value' => $settings['templates_email']['failure']['value'],
+    '#description' => t('This field supports html format and plain text. You can use following token: @username, @usermail, @order_number, @order_total_value, !line_items, @message_status'),
+  );
+
+  $form['templates_email']['reversed'] = array(
+    '#type' => 'text_format',
+    '#title' => t('Reversed Email'),
+    '#default_value' => $settings['templates_email']['reversed']['value'],
+    '#description' => t('This field supports html format and plain text. You can use following token: @username, @usermail, @order_number, @order_total_value, !line_items, @message_status'),
+  );
+
   return $form;
 }
 
@@ -488,10 +490,15 @@ function commerce_redecard_redirect_form($form, &$form_state, $order, $payment_m
 
   // Return an error if the enabling action's settings haven't been configured.
   if (empty($settings['urlback']) || empty($settings['urlbanner'])) {
-    drupal_set_message(t('RedeCard Integration is not configured for use. You can ')
-        . l(t('access Redecard Payment Method configuration'), 'admin/commerce/config/payment-methods/manage/commerce_payment_redecard')
-        . t(' to do it now.')
-        , 'error');
+    drupal_set_message(
+      t('RedeCard Integration is not configured for use. You can ')
+        . l(
+            t('access Redecard Payment Method configuration'), 
+            'admin/commerce/config/payment-methods/manage/commerce_payment_redecard'
+          )
+        . t(' to do it now.'), 
+      'error'
+    );
     return array();
   }
 
@@ -601,8 +608,7 @@ function commerce_redecard_submit_form($payment_method, $pane_values, $checkout_
  */
 function commerce_redecard_submit_form_validate($payment_method, $pane_form, $pane_values, $order, $form_parents = array()) {
   if (empty($pane_values['payment_methods_card']['cards'])) {
-    form_set_error('cards', t('Por favor selecione o seu cartão de crédito.'));
-    // form_set_error('cards', t('Please select a card of credit that you wish to pay.'));
+    form_set_error('cards', t('Please select a card of credit that you wish to pay.'));
   }
 }
 
@@ -803,7 +809,6 @@ function _converte_currency($order_total) {
  * Implements hook_commerce_checkout_pane_info_alter().
  */
 function commerce_redecard_commerce_checkout_pane_info_alter(&$checkout_panes) {
-  // $checkout_panes['checkout_completion_message']['callbacks']['checkout_form'] = 'commerce_redecard_completion_message_pane_checkout_form';
   $checkout_panes['checkout_completion_message'] += array(
     'callbacks' => array('checkout_form' => 'commerce_redecard_completion_message_pane_checkout_form'),
   );
