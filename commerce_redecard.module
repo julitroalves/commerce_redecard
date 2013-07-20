@@ -46,9 +46,9 @@ function commerce_redecard_process_notification() {
       // Cod, numpedido return of the Redecard with data of the transaction
       $codret = (int) filter_input(INPUT_GET, 'CODRET', FILTER_SANITIZE_NUMBER_INT);
       $order_id = (int) filter_input(INPUT_GET, 'NUMPEDIDO', FILTER_SANITIZE_NUMBER_INT);
-      $cv_cod = (int) filter_input(INPUT_GET, 'NUMCV', FILTER_SANITIZE_NUMBER_INT);
-      $author_cod = (int) filter_input(INPUT_GET, 'NUMAUTOR', FILTER_SANITIZE_NUMBER_INT);
-      $sqn_cod = (int) filter_input(INPUT_GET, 'NUMSQN', FILTER_SANITIZE_NUMBER_INT);
+      $cv_cod = (string) $_GET['NUMCV'];
+      $author_cod = (string) $_GET['NUMAUTOR'];
+      $sqn_cod = (string) $_GET['NUMSQN'];
   
       // Loading order
       $order = commerce_order_load($order_id);
