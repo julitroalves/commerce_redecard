@@ -1,13 +1,12 @@
 <?php
 /**
- * @Github julitroalves
- * @file Provides payment method for Drupal Commerce for Redecard Brazilian payment gateway.
+ * @file Provides payment method for Drupal Commerce for Redecard Brazilian 
+ * payment gateway.
  *
  * @see http://www.redecard.com.br/
+ * SCRIPT TO HELP IMPLEMENTS REDECARD PAYMENTS
+ * http://forum.imasters.com.br/topic/294667-komerci-redecard/
  */
-
-// SCRIPT TO HELP IMPLEMENTS REDECARD PAYMENTS
-// http://forum.imasters.com.br/topic/294667-komerci-redecard/
 
 // Sets the web service URL.
 define('COMMERCE_REDECARD_URL_WS', 'https://ecommerce.redecard.com.br/pos_virtual/confirma.asp');
@@ -31,18 +30,16 @@ function commerce_redecard_menu() {
 
 /**
  * Processes a notification request from Redecard
- *
- * @see http://www.redecard.com.br
  */
 function commerce_redecard_process_notification() {
 
-  // If received a POST is a notification API request from Pagseguro.
+  /* If received a POST is a notification API request from Pagseguro. */
   if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
-    // Checks the kind of notification.
+    /* Checks the kind of notification. */
     if (isset($_GET) && !empty($_GET)) {
 
-      // Cod, numpedido return of the Redecard with data of the transaction
+      /* Cod, numpedido return of the Redecard with data of the transaction */
       $codret = (int) filter_input(INPUT_GET, 'CODRET', FILTER_SANITIZE_NUMBER_INT);
       $order_id = (int) filter_input(INPUT_GET, 'NUMPEDIDO', FILTER_SANITIZE_NUMBER_INT);
       $cv_cod = (string) $_GET['NUMCV'];
@@ -61,7 +58,12 @@ function commerce_redecard_process_notification() {
       $status_transaction = commerce_redecard_codret($codret);
       
       if (!$cv_cod || !$author_cod || !$sqn_cod) {
-        watchdog('commerce_redecard', 'The request of transaction authorized was not completed successfully.', array(), WATCHDOG_ALERT);
+        watchdog(
+          'commerce_redecard', 
+          'The request of transaction authorized was not completed successfully.', 
+          array(), 
+          WATCHDOG_ALERT
+        );
         if ($status_transaction) {
           if (in_array($status_transaction['status_code'], array('institution_without_communication'))) {
             // Verify if email was already sent
