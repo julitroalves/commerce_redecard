@@ -453,9 +453,9 @@ function commerce_redecard_settings_form($settings = NULL) {
     'avs' => '',
     'log_debug_info' => '',
     'templates_email' => array(
-        'success' => '',
-        'failure' => '',
-        'reversed' => '',
+      'success' => '',
+      'failure' => '',
+      'reversed' => '',
     ),
   );
 
@@ -597,11 +597,11 @@ function commerce_redecard_redirect_form($form, &$form_state, $order, $payment_m
   if (!empty($order->data['commerce_redecard_options'])) {
     $data = $order->data['commerce_redecard_options'];
     $hidden_fields += array(
-    'TRANSACAO' =>
-      $data['payment_methods_card']['installments'] == '00' ? '04' : '06',
-    'PARCELAS' => $data['payment_methods_card']['installments'],
-    // MASTERCARD, DINERS, VISA.
-    'BANDEIRA' => $data['payment_methods_card']['cards'],
+      'TRANSACAO' =>
+        $data['payment_methods_card']['installments'] == '00' ? '04' : '06',
+      'PARCELAS' => $data['payment_methods_card']['installments'],
+      // MASTERCARD, DINERS, VISA.
+      'BANDEIRA' => $data['payment_methods_card']['cards'],
     );
   }
 
@@ -685,9 +685,10 @@ function commerce_redecard_submit_form_validate($payment_method, $pane_form, $pa
 
 /**
  * Payment method callback: checkout form submission.
+ * Display an error and prevent the payment attempt if RedeCard has not been
+ * configured yet.
  */
 function commerce_redecard_submit_form_submit($payment_method, $pane_form, $pane_values, $order, $charge) {
-  // Display an error and prevent the payment attempt if RedeCard has not been configured yet.
   if (empty($payment_method['settings'])) {
     drupal_set_message(t('This payment method must be configured by an administrator before it can be used.'), 'error');
     return FALSE;
@@ -712,18 +713,18 @@ function commerce_redecard_RedeCard_CodVer($number_filiation, $total, $ip) {
     9,20,23,33,58,36,44,5,24,15,62,
     25,34,59,37,45,6,25,16,27,63,26,
     35,60,38,46,7,26,17,28,14,36,2,
-    39,47,8,29,22,55,33
+    39,47,8,29,22,55,33,
   );
 
-  $seconds_now = $encodes[ $seconds_now ];
+  $seconds_now = $encodes[$seconds_now];
 
   $pad = $seconds_now < 10 ? "0" : "";
 
-  $tamIP = strlen($ip);
+  $tam_ip = strlen($ip);
   $total = intval($total);
   $numfil = intval($number_filiation);
   $i5 = $total + $seconds_now;
-  $i6 = $seconds_now + $tamIP;
+  $i6 = $seconds_now + $tam_ip;
   $i7 = $seconds_now * $numfil;
   $i8 = strlen($i7);
   return "$i7$i5$i6-$i8$pad$seconds_now";
@@ -731,9 +732,7 @@ function commerce_redecard_RedeCard_CodVer($number_filiation, $total, $ip) {
 
 /**
  * Return a list of payment statuses, or an specific payment status message.
- *
- * @param $codret
- *   The status identification in which to return the message.
+ * $codret: The status identification in which to return the message.
  */
 function commerce_redecard_codret($codret = NULL) {
   $codes = array(
