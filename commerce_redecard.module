@@ -452,12 +452,11 @@ function commerce_redecard_settings_form($settings = NULL) {
     'urlfooter' => '',
     'avs' => '',
     'log_debug_info' => '',
-    'templates_email' => 
-      array(
+    'templates_email' => array(
         'success' => '',
         'failure' => '',
         'reversed' => '',
-      ),
+    ),
   );
 
   $form['filiation'] = array(
@@ -598,11 +597,11 @@ function commerce_redecard_redirect_form($form, &$form_state, $order, $payment_m
   if (!empty($order->data['commerce_redecard_options'])) {
     $data = $order->data['commerce_redecard_options'];
     $hidden_fields += array(
-      'TRANSACAO' => 
-        $data['payment_methods_card']['installments'] == '00' ? '04' : '06',
-      'PARCELAS' => $data['payment_methods_card']['installments'],
-      // MASTERCARD, DINERS, VISA.
-      'BANDEIRA' => $data['payment_methods_card']['cards'],
+    'TRANSACAO' =>
+      $data['payment_methods_card']['installments'] == '00' ? '04' : '06',
+    'PARCELAS' => $data['payment_methods_card']['installments'],
+    // MASTERCARD, DINERS, VISA.
+    'BANDEIRA' => $data['payment_methods_card']['cards'],
     );
   }
 
@@ -625,7 +624,7 @@ function commerce_redecard_redirect_form($form, &$form_state, $order, $payment_m
   );
 
   commerce_order_status_update($order, 'pending');
-  
+
   return $form;
 }
 
@@ -704,7 +703,7 @@ function commerce_redecard_submit_form_submit($payment_method, $pane_form, $pane
  */
 function commerce_redecard_RedeCard_CodVer($number_filiation, $total, $ip) {
   $date = getdate();
-  $secondsNow = $date['seconds'];
+  $seconds_now = $date['seconds'];
 
   /* esta é uma tabelinha de codificação da própria redecard, onde eles embaralham os segundos. NÃO ALTERAR! */
   $encodes = array(
@@ -716,24 +715,24 @@ function commerce_redecard_RedeCard_CodVer($number_filiation, $total, $ip) {
     39,47,8,29,22,55,33
   );
 
-  $secondsNow = $encodes[ $secondsNow ];
+  $seconds_now = $encodes[ $seconds_now ];
 
-  $pad = $secondsNow < 10 ? "0" : "";
+  $pad = $seconds_now < 10 ? "0" : "";
 
   $tamIP = strlen($ip);
   $total = intval($total);
   $numfil = intval($number_filiation);
-  $i5 = $total + $secondsNow;
-  $i6 = $secondsNow + $tamIP;
-  $i7 = $secondsNow * $numfil;
+  $i5 = $total + $seconds_now;
+  $i6 = $seconds_now + $tamIP;
+  $i7 = $seconds_now * $numfil;
   $i8 = strlen($i7);
-  return "$i7$i5$i6-$i8$pad$secondsNow";
+  return "$i7$i5$i6-$i8$pad$seconds_now";
 }
 
 /**
  * Return a list of payment statuses, or an specific payment status message.
  *
- * @param $status
+ * @param $codret
  *   The status identification in which to return the message.
  */
 function commerce_redecard_codret($codret = NULL) {
@@ -773,6 +772,9 @@ function commerce_redecard_codret($codret = NULL) {
   return FALSE;
 }
 
+/**
+ * Custom function: implements status of transactions payment.
+ */
 function _commerce_redecard_statuses($codkey = NULL) {
   $codes_messages = array(
     'approved' => array(
