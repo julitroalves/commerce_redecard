@@ -337,6 +337,7 @@ function _commerce_redecard_order_data_get(&$order, &$variables) {
 function commerce_redecard_send_notifications_redecard_mail($key, &$message, $params) {
   $message['headers']['Content-Type'] = 'text/html; charset=UTF-8; format=flowed';
   $variables = array();
+  $content = '';
   $order = $params['order'];
 
   // Load payment method settings.
