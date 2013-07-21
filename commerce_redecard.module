@@ -106,18 +106,18 @@ function commerce_redecard_process_notification() {
 
       $data_cod = filter_input(INPUT_GET, 'DATA', FILTER_SANITIZE_NUMBER_INT);
 
-      //load payment method settings.
+      // Load payment method settings.
       $payment_method = commerce_payment_method_instance_load('redecard|commerce_payment_redecard');
 
       $order_total = $order->commerce_order_total[LANGUAGE_NONE][0]['amount'];
       $order_payment_values = $order->data['commerce_redecard_options'];
       $amount_order = commerce_redecard_converte_currency($order_total);
-      $transOrig = $order_payment_values['payment_methods_card']['installments'] == '00' ? '04' : '06';
+      $trans_orig = $order_payment_values['payment_methods_card']['installments'] == '00' ? '04' : '06';
 
       // Prepares the URL variables.
       $params = '?DATA=' . $data_cod;
       $params .= '&TRANSACAO=203';
-      $params .= '&TRANSORIG=' . $transOrig;
+      $params .= '&TRANSORIG=' . $trans_orig;
       $params .= '&PARCELAS=' . $order_payment_values['payment_methods_card']['installments'];
       $params .= '&FILIACAO=' . $payment_method['settings']['filiation'];
       $params .= '&TOTAL=' . $amount_order;
@@ -131,7 +131,7 @@ function commerce_redecard_process_notification() {
       $codret_final = intval($vars_response["CODRET"]);
       $msgret_final = $vars_response["MSGRET"];
 
-      //return transaction status code and message.
+      // Return transaction status code and message.
       $status_transaction = commerce_redecard_codret($codret_final);
 
       if ($payment_method['settings']['log_debug_info'] == TRUE) {
@@ -139,10 +139,10 @@ function commerce_redecard_process_notification() {
         watchdog('commerce_redecard', print_r($response, TRUE), array(), WATCHDOG_DEBUG);
       }
 
-      //Create a transaction for this last request for status transaction.
+      // Create a transaction for this last request for status transaction.
       commerce_redecard_payment_transaction($payment_method, $order_id, $order_total, $status_transaction);
 
-      //Deading session variables that.
+      // Deading session variables that.
       if (isset($_SESSION['notification_sent_to_customer'])) {
         unset($_SESSION['notification_sent_to_customer']);
       }
@@ -160,28 +160,36 @@ function commerce_redecard_process_notification() {
           );
           _commerce_redecard_transaction_approved($order, $params);
           break;
+
         case 1:
           _commerce_redecard_transaction_confirmed($order);
           break;
+
         case 2:
           _commerce_redecard_transaction_denied($order);
           break;
+
         case 3:
           _commerce_redecard_transaction_undone($order);
           break;
+
         case 4:
         case 5:
           _commerce_redecard_transaction_reversed($order);
           break;
+
         case 8:
           _commerce_redecard_transaction_data_error($order);
           break;
+
         case 9:
           _commerce_redecard_transaction_not_found($order);
           break;
+
         case 88:
           _commerce_redecard_transaction_missing_data($order);
           break;
+
       }
     }
   }
@@ -205,37 +213,37 @@ function _commerce_redecard_transaction_approved(&$order, $params) {
 }
 
 function _commerce_redecard_transaction_confirmed(&$order) {
-  //send e-mail contacting customer and admin.
+  // Send e-mail contacting customer and admin.
   commerce_redecard_notify_user_order($order, 'already_approved');
 }
 
 function _commerce_redecard_transaction_denied(&$order) {
-  //send e-mail contacting customer and admin.
+  // Send e-mail contacting customer and admin.
   commerce_redecard_notify_user_order($order, 'denied_transaction');
 }
 
 function _commerce_redecard_transaction_undone(&$order) {
-  //send e-mail contacting customer and admin.
+  // Send e-mail contacting customer and admin.
   commerce_redecard_notify_user_order($order, 'undone_transaction');
 }
 
 function _commerce_redecard_transaction_reversed(&$order) {
-  //send e-mail contacting customer and admin.
+  // Send e-mail contacting customer and admin.
   commerce_redecard_notify_user_order($order, 'reversed_transaction');
 }
 
 function _commerce_redecard_transaction_data_error(&$order) {
-  //send e-mail contacting customer and admin.
+  // Send e-mail contacting customer and admin.
   commerce_redecard_notify_user_order($order, 'error_data');
 }
 
 function _commerce_redecard_transaction_not_found(&$order) {
-  //send e-mail contacting customer and admin.
+  // Send e-mail contacting customer and admin.
   commerce_redecard_notify_user_order($order, 'notfound_transaction');
 }
 
 function _commerce_redecard_transaction_missing_data(&$order) {
-  //send e-mail contacting customer and admin.
+  // Send e-mail contacting customer and admin.
   commerce_redecard_notify_user_order($order, 'missing_data_transaction');
 }
 
@@ -243,7 +251,7 @@ function _commerce_redecard_transaction_missing_data(&$order) {
 * This function send email to customer that no have payment approved.
 */
 function commerce_redecard_notify_user_order(&$order, $key_mail) {
-  //@todo send email to adm site also.
+  // @todo send email to adm site also.
   $resp = drupal_mail('commerce_redecard_send_notifications_redecard', $key_mail, $order->mail, '', array('order' => $order) ,'', TRUE);
   return $resp['send'];
 }
@@ -547,7 +555,7 @@ function commerce_redecard_redirect_form($form, &$form_state, $order, $payment_m
     );
   }
 
-  // path where datas will be send.
+  // Path where datas will be send.
   $form['#action'] = 'https://ecommerce.redecard.com.br/pos_virtual/form_card.asp';
 
   // Create hidden fields.
