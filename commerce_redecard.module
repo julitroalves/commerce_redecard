@@ -1,6 +1,8 @@
 <?php
+
 /**
- * @file Provides payment method for Drupal Commerce for Redecard Brazilian 
+ * @file 
+ * Provides payment method for Drupal Commerce for Redecard Brazilian 
  * payment gateway.
  *
  * @see http://www.redecard.com.br/
@@ -29,7 +31,7 @@ function commerce_redecard_menu() {
 }
 
 /**
- * Processes a notification request from Redecard
+ * Processes a notification request from Redecard.
  */
 function commerce_redecard_process_notification() {
 
@@ -46,7 +48,7 @@ function commerce_redecard_process_notification() {
       $author_cod = (string) $_GET['NUMAUTOR'];
       $sqn_cod = (string) $_GET['NUMSQN'];
   
-      // Loading order
+      // Loading order.
       $order = commerce_order_load($order_id);
       
       // Discard if order not loaded.
@@ -66,10 +68,10 @@ function commerce_redecard_process_notification() {
         );
         if ($status_transaction) {
           if (in_array($status_transaction['status_code'], array('institution_without_communication'))) {
-            // Verify if email was already sent
+            // Verify if email was already sent.
             if (!isset($_SESSION['notification_sent_to_adm'])) {
-              // Send email to administrator of the payment-method
-              // TODO: Set emails to adms
+              // Send email to administrator of the payment-method.
+              // TODO: Set emails to adms.
               $adms = '';
               $resp = drupal_mail('commerce_redecard_send_notifications_redecard', $status_transaction['status_code'], $adms, '', array('order' => $order) ,'', TRUE);
               if ($resp['send']) {
