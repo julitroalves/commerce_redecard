@@ -196,8 +196,7 @@ function commerce_redecard_process_notification() {
 }
 
 /**
- * These custom functions are data process from web server 
- * RedeCard with your respective status.
+ * functions process from web server RedeCard with your respective status.
  * _commerce_redecard_transaction_approved():
  *   implements to transactions approved.
  * _commerce_redecard_transaction_confirmed(): conformes transactions approved.
@@ -630,8 +629,7 @@ function commerce_redecard_redirect_form($form, &$form_state, $order, $payment_m
 }
 
 /**
- * Payment callback: adds a message and CSS to the submission form if enabled in
- * the payment method settings.
+ * Payment callback: adds a message and CSS to the submission form.
  */
 function commerce_redecard_submit_form($payment_method, $pane_values, $checkout_pane, $order) {
   $form = array();
