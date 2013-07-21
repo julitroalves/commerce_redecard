@@ -73,7 +73,7 @@ function commerce_redecard_process_notification() {
             if (!isset($_SESSION['notification_sent_to_adm'])) {
               // Send email to administrator of the payment-method.
               // @todo Set emails to adms.
-              $adms = '';
+              $adms = variable_get('site_mail');
               $resp = drupal_mail(
                 'commerce_redecard_send_notifications_redecard',
                 $status_transaction['status_code'],
