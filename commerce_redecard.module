@@ -197,7 +197,7 @@ function commerce_redecard_process_notification() {
 
 /**
  * These custom functions are data process from web server RedeCard with your
- * respective status
+ respective status
  * _commerce_redecard_transaction_approved():
  *   implements to transactions approved.
  * _commerce_redecard_transaction_confirmed(): conformes transactions approved.
@@ -598,7 +598,7 @@ function commerce_redecard_redirect_form($form, &$form_state, $order, $payment_m
     $data = $order->data['commerce_redecard_options'];
     $hidden_fields += array(
       'TRANSACAO' =>
-        $data['payment_methods_card']['installments'] == '00' ? '04' : '06',
+      $data['payment_methods_card']['installments'] == '00' ? '04' : '06',
       'PARCELAS' => $data['payment_methods_card']['installments'],
       // MASTERCARD, DINERS, VISA.
       'BANDEIRA' => $data['payment_methods_card']['cards'],
@@ -630,7 +630,7 @@ function commerce_redecard_redirect_form($form, &$form_state, $order, $payment_m
 
 /**
  * Payment method callback: adds a message and CSS to the submission form if
- * enabled in the payment method settings.
+ enabled in the payment method settings.
  */
 function commerce_redecard_submit_form($payment_method, $pane_values, $checkout_pane, $order) {
   $form = array();
@@ -685,8 +685,8 @@ function commerce_redecard_submit_form_validate($payment_method, $pane_form, $pa
 
 /**
  * Payment method callback: checkout form submission.
- * Display an error and prevent the payment attempt if RedeCard has not been
- * configured yet.
+ Display an error and prevent the payment attempt if RedeCard has not been
+ configured yet.
  */
 function commerce_redecard_submit_form_submit($payment_method, $pane_form, $pane_values, $order, $charge) {
   if (empty($payment_method['settings'])) {
@@ -700,7 +700,7 @@ function commerce_redecard_submit_form_submit($payment_method, $pane_form, $pane
 }
 
 /**
- * Custom function that calculates cod of the RedeCard
+ * Custom function that calculates cod of the RedeCard.
  */
 function commerce_redecard_RedeCard_CodVer($number_filiation, $total, $ip) {
   $date = getdate();
