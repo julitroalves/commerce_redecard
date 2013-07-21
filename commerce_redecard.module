@@ -590,12 +590,12 @@ function commerce_redecard_submit_form($payment_method, $pane_values, $checkout_
     '#type' => 'select',
     '#title' => t('N° de Parcelas'),
     '#options' => array(
-      '00' => '1',
-      '02' => '2',
-      '03' => '3',
-      '04' => '4',
-      '05' => '5',
-      '06' => '6',
+      '00' => 1,
+      '02' => 2,
+      '03' => 3,
+      '04' => 4,
+      '05' => 5,
+      '06' => 6,
     ),
   );
 
