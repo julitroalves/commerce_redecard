@@ -630,8 +630,8 @@ function commerce_redecard_redirect_form($form, &$form_state, $order, $payment_m
 }
 
 /**
- * Payment method callback: adds a message and CSS to the submission form if
- * enabled in the payment method settings.
+ * Payment callback: adds a message and CSS to the submission form if enabled in
+ * the payment method settings.
  */
 function commerce_redecard_submit_form($payment_method, $pane_values, $checkout_pane, $order) {
   $form = array();
