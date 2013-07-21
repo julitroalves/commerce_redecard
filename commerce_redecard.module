@@ -347,47 +347,61 @@ function commerce_redecard_send_notifications_redecard_mail($key, &$message, $pa
     case 'missing_data_transaction':
       $message['subject'] = 'Dados Ausentes no Pagamento RedeCard';
       break;
+
     case 'notfound_transaction':
       $message['subject'] = 'Transação não encontrada no Pagamento RedeCard';
       break;
+
     case 'error_data':
       $message['subject'] = 'Dados não coincidem no Pagamento RedeCard';
       break;
+
     case 'reversed_transaction':
       $message['subject'] = 'Transação foi Estornada no Pagamento RedeCard';
       $content = $payment_method['settings']['templates_email']['reversed']['value'];
       break;
+
     case 'undone_transaction':
       $message['subject'] = 'Transação Desfeita no Pagamento RedeCard';
       break;
+
     case 'denied_transaction':
       $message['subject'] = 'Transação Negada no Pagamento RedeCard';
       break;
+
     case 'already_approved':
       $message['subject'] = 'Transação Já Confirmada no Pagamento RedeCard';
       $content = 'A transação já foi confirmada anteriormente; <br /> n° do pedido: <b>@order_number</b>';
       break;
+
     case 'unauthorized':
       $message['subject'] = 'Transação Não Autorizada';
       break;
+
     case 'invalid_foundation':
       $message['subject'] = 'Estabelecimento Inválido';
       break;
+
     case 'invalid_transaction':
       $message['subject'] = 'Transação Inválida';
       break;
+
     case 'redo_transaction':
       $message['subject'] = 'Refaça sua Transação';
       break;
+      
     case 'error_card':
       $message['subject'] = 'Problemas com o Cartão';
       break;
+
     case 'invalid_data':
       $message['subject'] = 'Dado Inválido';
       break;
+
     case 'institution_without_communication':
       $message['subject'] = 'Urgente! Instituição sem Comunicação';
       break;
+
     case 'error_bank':
       $message['subject'] = 'Banco não pertence à Rede';
       break;
