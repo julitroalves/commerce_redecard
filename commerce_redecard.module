@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @file 
+ * @file
  * Provides payment method for Drupal Commerce for Redecard Brazilian 
  * payment gateway.
  *
