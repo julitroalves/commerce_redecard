@@ -1,6 +1,5 @@
 <?php
 /**
- * @author Julio Alves
  * @Github julitroalves
  * @file Provides payment method for Drupal Commerce for Redecard Brazilian payment gateway.
  *
@@ -70,7 +69,7 @@ function commerce_redecard_process_notification() {
               // Send email to administrator of the payment-method
               // TODO: Set emails to adms
               $adms = '';
-              $resp = drupal_mail('send_notifications_redecard', $status_transaction['status_code'], $adms, '', array('order' => $order) ,'', TRUE);
+              $resp = drupal_mail('commerce_redecard_send_notifications_redecard', $status_transaction['status_code'], $adms, '', array('order' => $order) ,'', TRUE);
               if ($resp['send']) {
                 $_SESSION['notification_sent_to_adm'] = TRUE;
               }
@@ -97,7 +96,7 @@ function commerce_redecard_process_notification() {
 
       $order_total = $order->commerce_order_total[LANGUAGE_NONE][0]['amount'];
       $order_payment_values = $order->data['commerce_redecard_options'];
-      $amount_order = _converte_currency($order_total);
+      $amount_order = commerce_redecard_converte_currency($order_total);
       $transOrig = $order_payment_values['payment_methods_card']['installments'] == '00' ? '04' : '06';
 
       // Prepares the URL variables.
@@ -231,7 +230,7 @@ function _commerce_redecard_transaction_missing_data(&$order) {
 */
 function commerce_redecard_notify_user_order(&$order, $key_mail) {
   //TODO: Send email to adm site also.
-  $resp = drupal_mail('send_notifications_redecard', $key_mail, $order->mail, '', array('order' => $order) ,'', TRUE);
+  $resp = drupal_mail('commerce_redecard_send_notifications_redecard', $key_mail, $order->mail, '', array('order' => $order) ,'', TRUE);
   return $resp['send'];
 }
 
@@ -281,7 +280,7 @@ function _commerce_redecard_order_data_get(&$order, &$variables) {
 /**
 * Callback function used in drupal_mail() to alter body and title of the email.
 **/
-function send_notifications_redecard_mail($key, &$message, $params) {
+function commerce_redecard_send_notifications_redecard_mail($key, &$message, $params) {
   $message['headers']['Content-Type'] = 'text/html; charset=UTF-8; format=flowed';
   $variables = array();
   $order = $params['order'];
@@ -506,14 +505,14 @@ function commerce_redecard_redirect_form($form, &$form_state, $order, $payment_m
 
   // Send everything as a single item.
   $order_total = $order_wrapper->commerce_order_total->amount->value();
-  $order_total_value = _converte_currency($order_total);
+  $order_total_value = commerce_redecard_converte_currency($order_total);
   $hidden_fields = array(
     // Drupal Commerce uses integer value while RedeCard prefers a decimal.
     'TOTAL' => $order_total_value,
     'FILIACAO' => $settings['filiation'],
     'DISTRIBUIDOR' => $settings['distributor'],
     'NUMPEDIDO' => $order->order_number,
-    'CODVER' => _RedeCard_CodVer($settings['filiation'], $order_total_value, ip_address()),
+    'CODVER' => commerce_redecard_RedeCard_CodVer($settings['filiation'], $order_total_value, ip_address()),
     // 'URLBACK' => base_path() . 'checkout/' . $order->order_number,
     'URLBACK' => $settings['urlback'],
     'URLCIMA' => $settings['urlbanner'],
@@ -631,7 +630,7 @@ function commerce_redecard_submit_form_submit($payment_method, $pane_form, $pane
  * Custom function that calculates cod of the RedeCard
  *
  */
-function _RedeCard_CodVer($number_filiation, $total, $ip) {
+function commerce_redecard_RedeCard_CodVer($number_filiation, $total, $ip) {
   $date = getdate();
   $secondsNow = $date['seconds'];
   
@@ -801,7 +800,7 @@ function commerce_redecard_payment_transaction($payment_method, $order_id, $orde
   commerce_payment_transaction_save($transaction);
 }
 
-function _converte_currency($order_total) {
+function commerce_redecard_converte_currency($order_total) {
   return number_format($order_total / 100, 2, '.', '');
 }
 
