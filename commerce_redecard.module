@@ -61,9 +61,9 @@ function commerce_redecard_process_notification() {
 
       if (!$cv_cod || !$author_cod || !$sqn_cod) {
         watchdog(
-          'commerce_redecard', 
-          'The request of transaction authorized was not completed successfully.', 
-          array(), 
+          'commerce_redecard',
+          'The request of transaction authorized was not completed successfully.',
+          array(),
           WATCHDOG_ALERT
         );
 
@@ -75,14 +75,14 @@ function commerce_redecard_process_notification() {
               // @todo Set emails to adms.
               $adms = '';
               $resp = drupal_mail(
-                'commerce_redecard_send_notifications_redecard', 
-                $status_transaction['status_code'], 
-                $adms, 
-                '', 
+                'commerce_redecard_send_notifications_redecard',
+                $status_transaction['status_code'],
+                $adms,
+                '',
                 array(
-                  'order' => $order
+                  'order' => $order,
                 ),
-                '', 
+                '',
                 TRUE
               );
               if ($resp['send']) {
@@ -103,7 +103,7 @@ function commerce_redecard_process_notification() {
 
         return "<h1>Parece que houve algo de errado!</h1><p>Ops, parece que ocorreu um erro inesperado na geração do seu pedido. Por favor, tente realizá-lo novamente ou entre em contato conosco.</p>";
       }
-      
+
       $data_cod = filter_input(INPUT_GET, 'DATA', FILTER_SANITIZE_NUMBER_INT);
 
       //load payment method settings.
@@ -138,7 +138,7 @@ function commerce_redecard_process_notification() {
         watchdog('commerce_redecard', print_r($_GET, TRUE), array(), WATCHDOG_DEBUG);
         watchdog('commerce_redecard', print_r($response, TRUE), array(), WATCHDOG_DEBUG);
       }
-      
+
       //Create a transaction for this last request for status transaction.
       commerce_redecard_payment_transaction($payment_method, $order_id, $order_total, $status_transaction);
 
@@ -160,10 +160,10 @@ function commerce_redecard_process_notification() {
           );
           _commerce_redecard_transaction_approved($order, $params);
           break;
-        case 1: 
+        case 1:
           _commerce_redecard_transaction_confirmed($order);
           break;
-        case 2: 
+        case 2:
           _commerce_redecard_transaction_denied($order);
           break;
         case 3:
@@ -173,10 +173,10 @@ function commerce_redecard_process_notification() {
         case 5:
           _commerce_redecard_transaction_reversed($order);
           break;
-        case 8: 
+        case 8:
           _commerce_redecard_transaction_data_error($order);
           break;
-        case 9: 
+        case 9:
           _commerce_redecard_transaction_not_found($order);
           break;
         case 88:
@@ -197,7 +197,6 @@ function commerce_redecard_process_notification() {
 *   function: _commerce_redecard_transaction_data_error() implements to transactions approved.
 *   function: _commerce_redecard_transaction_not_found() implements to transactions approved.
 *   function: _commerce_redecard_transaction_missing_data() implements to transactions approved.
-*
 **/
 function _commerce_redecard_transaction_approved(&$order, $params) {
   $order->data['commerce_redecard_options']['transaction_data'] = $params;
@@ -262,24 +261,24 @@ function _commerce_redecard_order_data_get(&$order, &$variables) {
 
     if ($line_items->type == 'commerce_product') {
       $product_id = $line_items->commerce_product[LANGUAGE_NONE][0]['product_id'];
-      
+
       $product = commerce_product_load($product_id);
       $price = $product->commerce_price[LANGUAGE_NONE][0]['amount'];
       $price_formatted = number_format(abs(commerce_currency_amount_to_decimal($price, 'BRL')), 2, ',', '.');
       $items_name .= '<p class="product-line-item">' . $product->title . ' - R$ ' . $price_formatted . '</p>';
-    
+
       unset($line_items, $product);
     }
   }
   $total_order = number_format(
     abs(
       commerce_currency_amount_to_decimal(
-        $order->commerce_order_total[LANGUAGE_NONE][0]['amount'], 
+        $order->commerce_order_total[LANGUAGE_NONE][0]['amount'],
         'BRL'
       )
-    ), 
-    2, 
-    ',', 
+    ),
+    2,
+    ',',
     '.'
   );
 
@@ -299,10 +298,10 @@ function commerce_redecard_send_notifications_redecard_mail($key, &$message, $pa
   $message['headers']['Content-Type'] = 'text/html; charset=UTF-8; format=flowed';
   $variables = array();
   $order = $params['order'];
-  
+
   // Load payment method settings.
   $payment_method = commerce_payment_method_instance_load('redecard|commerce_payment_redecard');
-  
+
   $statuses = _commerce_redecard_statuses($key);
   $variables['@message_status'] = $statuses ? $statuses['msg'] : '';
   $content = $payment_method['settings']['templates_email']['failure']['value'];
@@ -314,20 +313,20 @@ function commerce_redecard_send_notifications_redecard_mail($key, &$message, $pa
     case 'notfound_transaction':
       $message['subject'] = 'Transação não encontrada no Pagamento RedeCard';
       break;
-    case 'error_data': 
+    case 'error_data':
       $message['subject'] = 'Dados não coincidem no Pagamento RedeCard';
       break;
-    case 'reversed_transaction': 
+    case 'reversed_transaction':
       $message['subject'] = 'Transação foi Estornada no Pagamento RedeCard';
       $content = $payment_method['settings']['templates_email']['reversed']['value'];
       break;
-    case 'undone_transaction': 
+    case 'undone_transaction':
       $message['subject'] = 'Transação Desfeita no Pagamento RedeCard';
       break;
-    case 'denied_transaction': 
+    case 'denied_transaction':
       $message['subject'] = 'Transação Negada no Pagamento RedeCard';
       break;
-    case 'already_approved': 
+    case 'already_approved':
       $message['subject'] = 'Transação Já Confirmada no Pagamento RedeCard';
       $content = 'A transação já foi confirmada anteriormente; <br /> n° do pedido: <b>@order_number</b>';
       break;
@@ -388,7 +387,7 @@ function commerce_redecard_commerce_payment_method_info() {
  */
 function commerce_redecard_settings_form($settings = NULL) {
   $form = array();
-  
+
   $settings = (array) $settings + array(
     'filiation' => '',
     'distributor' => '',
@@ -399,9 +398,9 @@ function commerce_redecard_settings_form($settings = NULL) {
     'avs' => '',
     'log_debug_info' => '',
     'templates_email' =>
-      array('success' => ''),
-      array('failure' => ''),
-      array('reversed' => ''),
+    array('success' => ''),
+    array('failure' => ''),
+    array('reversed' => ''),
   );
 
   $form['filiation'] = array(
@@ -471,7 +470,7 @@ function commerce_redecard_settings_form($settings = NULL) {
     '#title' => 'Templates de E-mail',
     '#collapsible' => TRUE,
   );
-  
+
   $form['templates_email']['success'] = array(
     '#type' => 'text_format',
     '#title' => t('Success Email'),
@@ -507,10 +506,10 @@ function commerce_redecard_redirect_form($form, &$form_state, $order, $payment_m
     drupal_set_message(
       t('RedeCard Integration is not configured for use. You can ')
         . l(
-            t('access Redecard Payment Method configuration'), 
+            t('access Redecard Payment Method configuration'),
             'admin/commerce/config/payment-methods/manage/commerce_payment_redecard'
           )
-        . t(' to do it now.'), 
+        . t(' to do it now.'),
       'error'
     );
     return array();
@@ -558,7 +557,7 @@ function commerce_redecard_redirect_form($form, &$form_state, $order, $payment_m
       '#value' => $value,
     );
   }
-  
+
   // @todo Make it possible to choose which image to use for the button.
   $form['submit'] = array(
     '#type' => 'button',
@@ -642,12 +641,11 @@ function commerce_redecard_submit_form_submit($payment_method, $pane_form, $pane
 
 /**
  * Custom function that calculates cod of the RedeCard
- *
  */
 function commerce_redecard_RedeCard_CodVer($number_filiation, $total, $ip) {
   $date = getdate();
   $secondsNow = $date['seconds'];
-  
+
   /* esta é uma tabelinha de codificação da própria redecard, onde eles embaralham os segundos. NÃO ALTERAR! */
   $encodes = array(
     11,17,21,31,56,34,42,3,18,13,
@@ -657,10 +655,10 @@ function commerce_redecard_RedeCard_CodVer($number_filiation, $total, $ip) {
     35,60,38,46,7,26,17,28,14,36,2,
     39,47,8,29,22,55,33
   );
- 
+
   $secondsNow = $encodes[ $secondsNow ];
 
-  $pad = $secondsNow < 10 ? "0" : ""; 
+  $pad = $secondsNow < 10 ? "0" : "";
 
   $tamIP = strlen($ip);
   $total = intval($total);
@@ -718,7 +716,7 @@ function commerce_redecard_codret($codret = NULL) {
 function _commerce_redecard_statuses($codkey = NULL) {
   $codes_messages = array(
     'approved' => array(
-      'msg' => t('Transação Aprovada. A transação foi autorizada com sucesso.'), 
+      'msg' => t('Transação Aprovada. A transação foi autorizada com sucesso.'),
       'status' => COMMERCE_PAYMENT_STATUS_SUCCESS,
     ),
     'already_approved' => array(
@@ -750,31 +748,31 @@ function _commerce_redecard_statuses($codkey = NULL) {
       'status' => COMMERCE_PAYMENT_STATUS_FAILURE,
     ),
     'unauthorized' => array(
-      'msg' => t('A transação não foi autorizada e não poderá ser seguida pela etapa de Confirmação.'), 
+      'msg' => t('A transação não foi autorizada e não poderá ser seguida pela etapa de Confirmação.'),
       'status' => COMMERCE_PAYMENT_STATUS_FAILURE,
     ),
     'invalid_foundation' => array(
-      'msg' => t('Estabelecimento Inválido. Por favor contacte o estabelecimento que está efetuando a venda.'), 
+      'msg' => t('Estabelecimento Inválido. Por favor contacte o estabelecimento que está efetuando a venda.'),
       'status' => COMMERCE_PAYMENT_STATUS_FAILURE,
     ),
     'invalid_transaction' => array(
-      'msg' => t('Transação Inválida. Por favor, contacte sua instituição para mais informações.'), 
+      'msg' => t('Transação Inválida. Por favor, contacte sua instituição para mais informações.'),
       'status' => COMMERCE_PAYMENT_STATUS_FAILURE,
     ),
     'redo_transaction' => array(
-      'msg' => t('Refaça a Transação. Ocorreram problemas na respectiva autorização e esta deverá ser enviada novamente.'), 
+      'msg' => t('Refaça a Transação. Ocorreram problemas na respectiva autorização e esta deverá ser enviada novamente.'),
       'status' => COMMERCE_PAYMENT_STATUS_FAILURE,
     ),
     'error_card' => array(
-      'msg' => t('Problemas com os dados do Cartão. Por favor, verifique as informações do seu cartão. Caso o erro persista contacte a Central de Atendimento do seu Cartão de Crédito.'), 
+      'msg' => t('Problemas com os dados do Cartão. Por favor, verifique as informações do seu cartão. Caso o erro persista contacte a Central de Atendimento do seu Cartão de Crédito.'),
       'status' => COMMERCE_PAYMENT_STATUS_FAILURE,
     ),
     'invalid_data' => array(
-      'msg' => t('Dados inválidos. Ocorre quando campos de Total, Transação, Parcelas, Bandeira, dentre outros, estão vazios ou incorretos. Por favor contacte seu vendedor.'), 
+      'msg' => t('Dados inválidos. Ocorre quando campos de Total, Transação, Parcelas, Bandeira, dentre outros, estão vazios ou incorretos. Por favor contacte seu vendedor.'),
       'status' => COMMERCE_PAYMENT_STATUS_FAILURE,
     ),
     'institution_without_communication' => array(
-      'msg' => t('Instituição sem comunicação.'), 
+      'msg' => t('Instituição sem comunicação.'),
       'status' => COMMERCE_PAYMENT_STATUS_FAILURE,
     ),
     'error_bank' => array(
@@ -796,7 +794,6 @@ function _commerce_redecard_statuses($codkey = NULL) {
 
 /**
  * Creates an payment transaction for the specified charge amount.
- *
  */
 function commerce_redecard_payment_transaction($payment_method, $order_id, $order_total, $status_transaction) {
   if (!$status_transaction) {
@@ -814,6 +811,9 @@ function commerce_redecard_payment_transaction($payment_method, $order_id, $orde
   commerce_payment_transaction_save($transaction);
 }
 
+/**
+* Custom function to convert currency.
+*/
 function commerce_redecard_converte_currency($order_total) {
   return number_format($order_total / 100, 2, '.', '');
 }
@@ -833,7 +833,7 @@ function commerce_redecard_commerce_checkout_pane_info_alter(&$checkout_panes) {
 function commerce_redecard_completion_message_pane_checkout_form($form, &$form_state, $checkout_pane, $order) {
   // Build the original message pane.
   $pane_form = commerce_checkout_completion_message_pane_checkout_form($form, $form_state, $checkout_pane, $order);
-  
+
   if ($order->data['payment_method'] == 'redecard|commerce_payment_redecard') {
     if (isset($order->data['commerce_redecard_options']['transaction_data'])) {
       $data_trans = $order->data['commerce_redecard_options']['transaction_data'];
