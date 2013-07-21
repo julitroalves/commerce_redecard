@@ -452,10 +452,12 @@ function commerce_redecard_settings_form($settings = NULL) {
     'urlfooter' => '',
     'avs' => '',
     'log_debug_info' => '',
-    'templates_email' =>
-    array('success' => ''),
-    array('failure' => ''),
-    array('reversed' => ''),
+    'templates_email' => 
+      array(
+        'success' => '',
+        'failure' => '',
+        'reversed' => '',
+      ),
   );
 
   $form['filiation'] = array(
@@ -596,9 +598,11 @@ function commerce_redecard_redirect_form($form, &$form_state, $order, $payment_m
   if (!empty($order->data['commerce_redecard_options'])) {
     $data = $order->data['commerce_redecard_options'];
     $hidden_fields += array(
-      'TRANSACAO' => $data['payment_methods_card']['installments'] == '00' ? '04' : '06',
+      'TRANSACAO' => 
+        $data['payment_methods_card']['installments'] == '00' ? '04' : '06',
       'PARCELAS' => $data['payment_methods_card']['installments'],
-      'BANDEIRA' => $data['payment_methods_card']['cards'], // MASTERCARD, DINERS, VISA.
+      // MASTERCARD, DINERS, VISA.
+      'BANDEIRA' => $data['payment_methods_card']['cards'],
     );
   }
 
@@ -621,6 +625,7 @@ function commerce_redecard_redirect_form($form, &$form_state, $order, $payment_m
   );
 
   commerce_order_status_update($order, 'pending');
+  
   return $form;
 }
 
