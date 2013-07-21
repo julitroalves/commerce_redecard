@@ -196,15 +196,23 @@ function commerce_redecard_process_notification() {
 }
 
 /**
-* These custom functions are data process from web server RedeCard with your respective status
-*   function: _commerce_redecard_transaction_approved() implements to transactions approved.
-*   function: _commerce_redecard_transaction_confirmed() conformes transactions approved.
-*   function: _commerce_redecard_transaction_denied() implements transactions denied by authorizer.
-*   function: _commerce_redecard_transaction_undone() implements transactions undone by time limit exceeded.
-*   function: _commerce_redecard_transaction_reversed() implements to transactions reversed by customer or institution of payment.
-*   function: _commerce_redecard_transaction_data_error() implements to transactions approved.
-*   function: _commerce_redecard_transaction_not_found() implements to transactions approved.
-*   function: _commerce_redecard_transaction_missing_data() implements to transactions approved.
+ * These custom functions are data process from web server RedeCard with your
+ * respective status
+ * _commerce_redecard_transaction_approved():
+ *   implements to transactions approved.
+ * _commerce_redecard_transaction_confirmed(): conformes transactions approved.
+ * _commerce_redecard_transaction_denied():
+ *   implements transactions denied by authorizer.
+ * _commerce_redecard_transaction_undone():
+ *   implements transactions undone by time limit exceeded.
+ * _commerce_redecard_transaction_reversed():
+ *   implements to transactions reversed by customer or institution of payment.
+ * _commerce_redecard_transaction_data_error():
+ *   implements to transactions approved.
+ * _commerce_redecard_transaction_not_found():
+ *   implements to transactions approved.
+ * _commerce_redecard_transaction_missing_data():
+ *   implements to transactions approved.
 **/
 function _commerce_redecard_transaction_approved(&$order, $params) {
   $order->data['commerce_redecard_options']['transaction_data'] = $params;
@@ -212,44 +220,65 @@ function _commerce_redecard_transaction_approved(&$order, $params) {
   drupal_goto('checkout/' . $order->order_number . '/complete');
 }
 
+/**
+ * Implements custom function _commerce_redecard_transaction_confirmed.
+ */
 function _commerce_redecard_transaction_confirmed(&$order) {
   // Send e-mail contacting customer and admin.
   commerce_redecard_notify_user_order($order, 'already_approved');
 }
 
+/**
+ * Implements custom function _commerce_redecard_transaction_denied.
+ */
 function _commerce_redecard_transaction_denied(&$order) {
   // Send e-mail contacting customer and admin.
   commerce_redecard_notify_user_order($order, 'denied_transaction');
 }
 
+/**
+ * Implements custom function _commerce_redecard_transaction_undone.
+ */
 function _commerce_redecard_transaction_undone(&$order) {
   // Send e-mail contacting customer and admin.
   commerce_redecard_notify_user_order($order, 'undone_transaction');
 }
 
+/**
+ * Implements custom function _commerce_redecard_transaction_reversed.
+ */
 function _commerce_redecard_transaction_reversed(&$order) {
   // Send e-mail contacting customer and admin.
   commerce_redecard_notify_user_order($order, 'reversed_transaction');
 }
 
+/**
+ * Implements custom function _commerce_redecard_transaction_data_error.
+ */
 function _commerce_redecard_transaction_data_error(&$order) {
   // Send e-mail contacting customer and admin.
   commerce_redecard_notify_user_order($order, 'error_data');
 }
 
+/**
+ * Implements custom function _commerce_redecard_transaction_not_found.
+ */
 function _commerce_redecard_transaction_not_found(&$order) {
   // Send e-mail contacting customer and admin.
   commerce_redecard_notify_user_order($order, 'notfound_transaction');
 }
 
+/**
+ * Implements custom function _commerce_redecard_transaction_missing_data.
+ */
 function _commerce_redecard_transaction_missing_data(&$order) {
   // Send e-mail contacting customer and admin.
   commerce_redecard_notify_user_order($order, 'missing_data_transaction');
 }
 
 /**
-* This function send email to customer that no have payment approved.
-*/
+ * This function send email to customer that no have payment approved.
+ */
 function commerce_redecard_notify_user_order(&$order, $key_mail) {
   // @todo send email to adm site also.
   $resp = drupal_mail('commerce_redecard_send_notifications_redecard', $key_mail, $order->mail, '', array('order' => $order) ,'', TRUE);
