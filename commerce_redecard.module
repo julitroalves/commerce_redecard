@@ -196,7 +196,8 @@ function commerce_redecard_process_notification() {
 }
 
 /**
- * functions process from web server RedeCard with your respective status.
+ * Functions process from web server RedeCard with your respective status.
+ *
  * _commerce_redecard_transaction_approved():
  *   implements to transactions approved.
  * _commerce_redecard_transaction_confirmed(): conformes transactions approved.
@@ -336,7 +337,6 @@ function _commerce_redecard_order_data_get(&$order, &$variables) {
 function commerce_redecard_send_notifications_redecard_mail($key, &$message, $params) {
   $message['headers']['Content-Type'] = 'text/html; charset=UTF-8; format=flowed';
   $variables = array();
-  $content = '';
   $order = $params['order'];
 
   // Load payment method settings.
@@ -414,7 +414,7 @@ function commerce_redecard_send_notifications_redecard_mail($key, &$message, $pa
   _commerce_redecard_order_data_get($order, $variables);
 
   // Send $content to body of email.
-  $message['body'][] = t($content, $variables);
+  $message['body'][] = format_string($content, $variables);
 
   unset($order);
 }
