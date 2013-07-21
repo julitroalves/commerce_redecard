@@ -213,7 +213,7 @@ function commerce_redecard_process_notification() {
  *   implements to transactions approved.
  * _commerce_redecard_transaction_missing_data():
  *   implements to transactions approved.
-**/
+ */
 function _commerce_redecard_transaction_approved(&$order, $params) {
   $order->data['commerce_redecard_options']['transaction_data'] = $params;
   commerce_order_status_update($order, 'completed');
@@ -281,10 +281,13 @@ function _commerce_redecard_transaction_missing_data(&$order) {
  */
 function commerce_redecard_notify_user_order(&$order, $key_mail) {
   // @todo send email to adm site also.
-  $resp = drupal_mail('commerce_redecard_send_notifications_redecard', $key_mail, $order->mail, '', array('order' => $order) ,'', TRUE);
+  $resp = drupal_mail('commerce_redecard_send_notifications_redecard', $key_mail, $order->mail, '', array('order' => $order), '', TRUE);
   return $resp['send'];
 }
 
+/**
+ * Custom function to get data of order such as line items.
+ */
 function _commerce_redecard_order_data_get(&$order, &$variables) {
   // Loading user data.
   $user = user_load($order->uid);
@@ -329,8 +332,8 @@ function _commerce_redecard_order_data_get(&$order, &$variables) {
 }
 
 /**
-* Callback function used in drupal_mail() to alter body and title of the email.
-**/
+ * Callback function used in drupal_mail() to alter body and title of the email.
+ */
 function commerce_redecard_send_notifications_redecard_mail($key, &$message, $params) {
   $message['headers']['Content-Type'] = 'text/html; charset=UTF-8; format=flowed';
   $variables = array();
@@ -389,7 +392,7 @@ function commerce_redecard_send_notifications_redecard_mail($key, &$message, $pa
     case 'redo_transaction':
       $message['subject'] = 'Refaça sua Transação';
       break;
-      
+
     case 'error_card':
       $message['subject'] = 'Problemas com o Cartão';
       break;
@@ -406,6 +409,7 @@ function commerce_redecard_send_notifications_redecard_mail($key, &$message, $pa
       $message['subject'] = 'Banco não pertence à Rede';
       break;
   }
+
   // Fill array variables with token.
   _commerce_redecard_order_data_get($order, $variables);
 
@@ -486,7 +490,7 @@ function commerce_redecard_settings_form($settings = NULL) {
     '#required' => TRUE,
   );
 
-    $form['urlfooter'] = array(
+  $form['urlfooter'] = array(
     '#type' => 'textfield',
     '#title' => t('Url Footer'),
     '#description' => t('Url path to image that is footer of the site of the card.'),
@@ -863,8 +867,8 @@ function commerce_redecard_payment_transaction($payment_method, $order_id, $orde
 }
 
 /**
-* Custom function to convert currency.
-*/
+ * Custom function to convert currency.
+ */
 function commerce_redecard_converte_currency($order_total) {
   return number_format($order_total / 100, 2, '.', '');
 }
