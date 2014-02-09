@@ -129,7 +129,6 @@ function commerce_redecard_process_notification() {
       $response = drupal_http_request(COMMERCE_REDECARD_URL_WS . $params, array('method' => 'POST'));
       parse_str($response->data, $vars_response);
       $codret_final = intval($vars_response["CODRET"]);
-      $msgret_final = $vars_response["MSGRET"];
 
       // Return transaction status code and message.
       $status_transaction = commerce_redecard_codret($codret_final);
@@ -633,7 +632,7 @@ function commerce_redecard_redirect_form($form, &$form_state, $order, $payment_m
 
   // @todo Make it possible to choose which image to use for the button.
   $form['submit'] = array(
-    '#type' => 'button',    
+    '#type' => 'button',
     '#value' => t('Click here to pay'),
     '#attributes' => array('class' => array('super-button')),
   );
@@ -720,8 +719,9 @@ function commerce_redecard_submit_form_submit($payment_method, $pane_form, $pane
 function commerce_redecard_RedeCard_CodVer($number_filiation, $total, $ip) {
   $date = getdate();
   $seconds_now = $date['seconds'];
-  
-  // This is a enconding table of redecard, where they shuffle the seconds to kind of verification.
+
+  // This is a enconding table of redecard, where they shuffle the seconds to.
+  // kind of verification.
   $encodes = array(
     11, 17, 21, 31, 56, 34, 42, 3, 18, 13,
     12, 18, 22, 32, 57, 35, 43, 4, 19, 14,
@@ -916,7 +916,7 @@ function commerce_redecard_completion_message_pane_checkout_form($form, &$form_s
   if ($payment_method == 'redecard|commerce_payment_redecard') {
     if (isset($order->data['commerce_redecard_options']['transaction_data'])) {
       $data_transaction = $order->data['commerce_redecard_options']['transaction_data'];
-      
+
       $query_string = http_build_query(array(
         'DATA' => $data_transaction['DATA'],
         'TRANSACAO' => 201,
