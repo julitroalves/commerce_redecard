@@ -39,7 +39,7 @@ function commerce_redecard_process_notification() {
   if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
     // Checks the kind of notification.
-    if (isset($_GET) && !empty($_GET)) {
+    if (isset($_GET) && !empty($_GET['NUMCV']) && !empty($_GET['NUMCV']) && !empty($_GET['NUMAUTOR']) && !empty($_GET['NUMSQN'])) {
 
       // Cod, numpedido return of the Redecard with data of the transaction.
       $codret = (int) filter_input(INPUT_GET, 'CODRET', FILTER_SANITIZE_NUMBER_INT);
@@ -189,8 +189,17 @@ function commerce_redecard_process_notification() {
         case 88:
           _commerce_redecard_transaction_missing_data($order);
           break;
-
       }
+    }
+    else {
+      watchdog('commerce_redecard', 'Error with $_GET variables @numcv, numautor, @numsqn, !get', array(
+        '@numcv' => !empty($_GET['NUMCV']) ? '$_GET[NUMCV]: ' . $_GET['NUMCV'] : 'empty $_GET[NUMCV]',
+        '@numautor' => !empty($_GET['NUMAUTOR']) ? '$_GET[NUMAUTOR]: ' . $_GET['NUMAUTOR'] : 'empty $_GET[NUMAUTOR]',
+        '@numsqn' => !empty($_GET['NUMSQN']) ? '$_GET[NUMSQN]: ' . $_GET['NUMSQN'] : 'empty $_GET[NUMSQN]',
+        '!get' => !empty($_GET) ? '$_GET: ' . print_r($_GET, TRUE) : 'empty $_GET',
+      ), WATCHDOG_ERROR);
+      
+      return drupal_set_message(t('Redecard error, please contact an administrator'), 'error');
     }
   }
 }
