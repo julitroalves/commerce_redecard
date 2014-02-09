@@ -111,7 +111,7 @@ function commerce_redecard_process_notification() {
 
       $order_total = $order->commerce_order_total[LANGUAGE_NONE][0]['amount'];
       $order_payment_values = $order->data['commerce_redecard_options'];
-      $amount_order = commerce_redecard_converte_currency($order_total);
+      $amount_order = commerce_redecard_convert_currency($order_total);
       $trans_orig = $order_payment_values['payment_methods_card']['installments'] == '00' ? '04' : '06';
 
       // Prepares the URL variables.
@@ -453,9 +453,15 @@ function commerce_redecard_settings_form($settings = NULL) {
     'avs' => '',
     'log_debug_info' => '',
     'templates_email' => array(
-      'success' => '',
-      'failure' => '',
-      'reversed' => '',
+      'success' => array(
+        'value' => '',
+      ),
+      'failure' => array(
+        'value' => '',
+      ),
+      'reversed' => array(
+        'value' => '',
+      ),
     ),
   );
 
@@ -575,7 +581,7 @@ function commerce_redecard_redirect_form($form, &$form_state, $order, $payment_m
 
   // Send everything as a single item.
   $order_total = $order_wrapper->commerce_order_total->amount->value();
-  $order_total_value = commerce_redecard_converte_currency($order_total);
+  $order_total_value = commerce_redecard_convert_currency($order_total);
   $hidden_fields = array(
     // Drupal Commerce uses integer value while RedeCard prefers a decimal.
     'TOTAL' => $order_total_value,
@@ -876,7 +882,7 @@ function commerce_redecard_payment_transaction($payment_method, $order_id, $orde
 /**
  * Custom function to convert currency.
  */
-function commerce_redecard_converte_currency($order_total) {
+function commerce_redecard_convert_currency($order_total) {
   return number_format($order_total / 100, 2, '.', '');
 }
 
