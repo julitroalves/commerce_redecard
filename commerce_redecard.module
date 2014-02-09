@@ -198,7 +198,7 @@ function commerce_redecard_process_notification() {
         '@numsqn' => !empty($_GET['NUMSQN']) ? '$_GET[NUMSQN]: ' . $_GET['NUMSQN'] : 'empty $_GET[NUMSQN]',
         '!get' => !empty($_GET) ? '$_GET: ' . print_r($_GET, TRUE) : 'empty $_GET',
       ), WATCHDOG_ERROR);
-      
+
       return drupal_set_message(t('Redecard error, please contact an administrator'), 'error');
     }
   }
@@ -436,7 +436,7 @@ function commerce_redecard_commerce_payment_method_info() {
 
   $payment_methods['redecard'] = array(
     'base' => 'commerce_redecard',
-    'title' => t('RedeCard (Cartões de Crédito)'),
+    'title' => t('RedeCard (Credit Cards)'),
     'short_title' => t('RedeCard'),
     'description' => t('RedeCard Integration'),
     'terminal' => FALSE,
@@ -633,8 +633,8 @@ function commerce_redecard_redirect_form($form, &$form_state, $order, $payment_m
 
   // @todo Make it possible to choose which image to use for the button.
   $form['submit'] = array(
-    '#type' => 'button',
-    '#value' => t('Clique aqui para realizar seu Pagamento'),
+    '#type' => 'button',    
+    '#value' => t('Click here to pay'),
     '#attributes' => array('class' => array('super-button')),
   );
 
@@ -658,7 +658,7 @@ function commerce_redecard_submit_form($payment_method, $pane_values, $checkout_
 
   $form['payment_methods_card'] = array(
     '#type' => 'fieldset',
-    '#title' => '<h3>' . t('Forma de Pagamento') . '</h3>',
+    '#title' => '<h3>' . t('Forms of Payment') . '</h3>',
     '#collapsible' => FALSE,
   );
 
@@ -674,7 +674,7 @@ function commerce_redecard_submit_form($payment_method, $pane_values, $checkout_
 
   $form['payment_methods_card']['installments'] = array(
     '#type' => 'select',
-    '#title' => t('N° de Parcelas'),
+    '#title' => t('N° of Installments'),
     '#options' => array(
       '00' => 1,
       '02' => 2,
@@ -720,8 +720,8 @@ function commerce_redecard_submit_form_submit($payment_method, $pane_form, $pane
 function commerce_redecard_RedeCard_CodVer($number_filiation, $total, $ip) {
   $date = getdate();
   $seconds_now = $date['seconds'];
-
-  /* esta é uma tabelinha de codificação da própria redecard, onde eles embaralham os segundos. NÃO ALTERAR! */
+  
+  // This is a enconding table of redecard, where they shuffle the seconds to kind of verification.
   $encodes = array(
     11, 17, 21, 31, 56, 34, 42, 3, 18, 13,
     12, 18, 22, 32, 57, 35, 43, 4, 19, 14,
@@ -859,7 +859,7 @@ function _commerce_redecard_statuses($codkey = NULL) {
   );
 
   if (!empty($codkey) && isset($codes_messages[$codkey])) {
-    return $response = array(
+    return array(
       'status_code' => $codkey,
       'msg' => $codes_messages[$codkey]['msg'],
       'status' => $codes_messages[$codkey]['status'],
@@ -910,7 +910,7 @@ function commerce_redecard_commerce_checkout_pane_info_alter(&$checkout_panes) {
 function commerce_redecard_completion_message_pane_checkout_form($form, &$form_state, $checkout_pane, $order) {
   // Build the original message pane.
   $pane_form = commerce_checkout_completion_message_pane_checkout_form($form, $form_state, $checkout_pane, $order);
-  
+
   $payment_method = isset($order->data['payment_method']) ? $order->data['payment_method'] : '';
 
   if ($payment_method == 'redecard|commerce_payment_redecard') {
@@ -923,16 +923,17 @@ function commerce_redecard_completion_message_pane_checkout_form($form, &$form_s
         'NUMAUTOR' => $data_transaction['NUMAUTOR'],
         'NUMCV' => $data_transaction['NUMCV'],
         'LANGUAGE' => 'POR',
-      ));      
+      ));
 
       drupal_add_js(array('commerce_redecard' => array('print_path' => COMMERCE_REDECARD_URL_CONF . '?' . $query_string)), 'setting');
       drupal_add_js(drupal_get_path('module', 'commerce_redecard') . '/js/print_cupom.js', 'file');
-      
+
       $form = array();
 
       $form['print_cupom'] = array(
         '#type' => 'button',
         '#value' => t('Clique para visualizar o seu Comprovante'),
+        '#value' => t('Click here to see your receipt'),
         '#attributes' => array('class' => array('super-button')),
       );
 
@@ -942,7 +943,7 @@ function commerce_redecard_completion_message_pane_checkout_form($form, &$form_s
       );
     }
     else {
-      drupal_set_message(t('Data transaction isn\'t available to this order. Please do your order again.'), 'error');
+      drupal_set_message(t("Data transaction isn\'t available to this order. Please do your order again."), 'error');
     }
   }
 
