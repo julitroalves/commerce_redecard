@@ -62,46 +62,33 @@ function commerce_redecard_process_notification() {
       if (!$cv_cod || !$author_cod || !$sqn_cod) {
         watchdog(
           'commerce_redecard',
-          'The request of transaction authorized was not completed successfully.',
-          array(),
-          WATCHDOG_ALERT
+          'The request of transaction authorized was not completed successfully.'
         );
 
         if ($status_transaction) {
-          if (in_array($status_transaction['status_code'], array('institution_without_communication'))) {
-            // Verify if email was already sent.
-            if (!isset($_SESSION['notification_sent_to_adm'])) {
-              // Send email to administrator of the payment-method.
-              // @todo Set emails to adms.
-              $adms = variable_get('site_mail');
-              $resp = drupal_mail(
-                'commerce_redecard_send_notifications_redecard',
-                $status_transaction['status_code'],
-                $adms,
-                '',
-                array(
-                  'order' => $order,
-                ),
-                '',
-                TRUE
-              );
-              if ($resp['send']) {
-                $_SESSION['notification_sent_to_adm'] = TRUE;
-              }
-            }
-            return "<h1>Parece que houve algo de errado!</h1><p>Ops, parece que ocorreu um erro na geração do seu pedido. Por favor, tente realizá-lo novamente ou entre em contato conosco.</p>";
-          }
+          watchdog(
+            'commerce_redecard',
+            '<pre>@print_r</pre>',
+            array('@print_r' => print_r($status_transaction, TRUE)),
+            WATCHDOG_ALERT
+          );
+          
           // Verify if email was already sent.
-          if (!isset($_SESSION['notification_sent_to_customer'])) {
+          if (!isset($_SESSION['commerce_redecard_notify_customer'])) {
             $resp = commerce_redecard_notify_user_order($order, $status_transaction['status_code']);
             if ($resp) {
-              $_SESSION['notification_sent_to_customer'] = TRUE;
+              $_SESSION['commerce_redecard_notify_customer'] = TRUE;
             }
           }
-          return '<h1>Houve algo de errado</h1><p>' . $status_transaction['msg'] . '. Lhe enviamos um e-mail com mais informações.</p>';
+
+          // Reporting error to customer.
+          return t(
+            'Something wrong! This is a description of error: @error_msg',
+            array('@error_msg' => $status_transaction['msg'])
+          );
         }
 
-        return "<h1>Parece que houve algo de errado!</h1><p>Ops, parece que ocorreu um erro inesperado na geração do seu pedido. Por favor, tente realizá-lo novamente ou entre em contato conosco.</p>";
+        return t('Something wrong! It appears that occurred an unexpected error transaction. Please contact owner shop.');
       }
 
       $data_cod = filter_input(INPUT_GET, 'DATA', FILTER_SANITIZE_NUMBER_INT);
@@ -142,12 +129,8 @@ function commerce_redecard_process_notification() {
       commerce_redecard_payment_transaction($payment_method, $order_id, $order_total, $status_transaction);
 
       // Deading session variables that.
-      if (isset($_SESSION['notification_sent_to_customer'])) {
-        unset($_SESSION['notification_sent_to_customer']);
-      }
-
-      if (isset($_SESSION['notification_sent_to_adm'])) {
-        unset($_SESSION['notification_sent_to_adm']);
+      if (isset($_SESSION['commerce_redecard_notify_customer'])) {
+        unset($_SESSION['commerce_redecard_notify_customer']);
       }
 
       switch ($codret_final) {
