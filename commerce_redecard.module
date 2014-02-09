@@ -35,13 +35,13 @@ function commerce_redecard_menu() {
  */
 function commerce_redecard_process_notification() {
 
-  /* If received a POST is a notification API request from Pagseguro. */
+  // If received a POST is a notification API request from Pagseguro.
   if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
-    /* Checks the kind of notification. */
+    // Checks the kind of notification.
     if (isset($_GET) && !empty($_GET)) {
 
-      /* Cod, numpedido return of the Redecard with data of the transaction */
+      // Cod, numpedido return of the Redecard with data of the transaction.
       $codret = (int) filter_input(INPUT_GET, 'CODRET', FILTER_SANITIZE_NUMBER_INT);
       $order_id = (int) filter_input(INPUT_GET, 'NUMPEDIDO', FILTER_SANITIZE_NUMBER_INT);
       $cv_cod = (string) $_GET['NUMCV'];
@@ -566,12 +566,12 @@ function commerce_redecard_redirect_form($form, &$form_state, $order, $payment_m
   // Return an error if the enabling action's settings haven't been configured.
   if (empty($settings['urlback']) || empty($settings['urlbanner'])) {
     drupal_set_message(
-      t('RedeCard Integration is not configured for use. You can ')
+      t('RedeCard Integration is not configured for use. You can')
         . l(
             t('access Redecard Payment Method configuration'),
             'admin/commerce/config/payment-methods/manage/commerce_payment_redecard'
           )
-        . t(' to do it now.'),
+        . t('to do it now.'),
       'error'
     );
     return array();
@@ -714,12 +714,12 @@ function commerce_redecard_RedeCard_CodVer($number_filiation, $total, $ip) {
 
   /* esta é uma tabelinha de codificação da própria redecard, onde eles embaralham os segundos. NÃO ALTERAR! */
   $encodes = array(
-    11,17,21,31,56,34,42,3,18,13,
-    12,18,22,32,57,35,43,4,19,14,
-    9,20,23,33,58,36,44,5,24,15,62,
-    25,34,59,37,45,6,25,16,27,63,26,
-    35,60,38,46,7,26,17,28,14,36,2,
-    39,47,8,29,22,55,33,
+    11, 17, 21, 31, 56, 34, 42, 3, 18, 13,
+    12, 18, 22, 32, 57, 35, 43, 4, 19, 14,
+    9, 20, 23, 33, 58, 36, 44, 5, 24, 15, 62,
+    25, 34, 59, 37, 45, 6, 25, 16, 27, 63, 26,
+    35, 60, 38, 46, 7, 26, 17, 28, 14, 36, 2,
+    39, 47, 8, 29, 22, 55, 33,
   );
 
   $seconds_now = $encodes[$seconds_now];
@@ -747,7 +747,7 @@ function commerce_redecard_codret($codret = NULL) {
     'already_approved' => array(1),
     'denied_transaction' => array(2),
     'undone_transaction' => array(3),
-    'reversed_transaction' => array(4,5),
+    'reversed_transaction' => array(4, 5),
     'error_data' => array(8),
     'notfound_transaction' => array(9),
     'missing_data_transaction' => array(88),
@@ -901,19 +901,30 @@ function commerce_redecard_commerce_checkout_pane_info_alter(&$checkout_panes) {
 function commerce_redecard_completion_message_pane_checkout_form($form, &$form_state, $checkout_pane, $order) {
   // Build the original message pane.
   $pane_form = commerce_checkout_completion_message_pane_checkout_form($form, $form_state, $checkout_pane, $order);
+  
+  $payment_method = isset($order->data['payment_method']) ? $order->data['payment_method'] : '';
 
-  if ($order->data['payment_method'] == 'redecard|commerce_payment_redecard') {
+  if ($payment_method == 'redecard|commerce_payment_redecard') {
     if (isset($order->data['commerce_redecard_options']['transaction_data'])) {
-      $data_trans = $order->data['commerce_redecard_options']['transaction_data'];
-      $params = '?DATA=' . $data_trans['DATA'] . '&TRANSACAO=201' . '&NUMAUTOR=' . $data_trans['NUMAUTOR'] . '&NUMCV=' . $data_trans['NUMCV'] . '&LANGUAGE=POR';
-      drupal_add_js(array('commerce_redecard' => array('print_path' => COMMERCE_REDECARD_URL_CONF . $params)), 'setting');
+      $data_transaction = $order->data['commerce_redecard_options']['transaction_data'];
+      
+      $query_string = http_build_query(array(
+        'DATA' => $data_transaction['DATA'],
+        'TRANSACAO' => 201,
+        'NUMAUTOR' => $data_transaction['NUMAUTOR'],
+        'NUMCV' => $data_transaction['NUMCV'],
+        'LANGUAGE' => 'POR',
+      ));      
+
+      drupal_add_js(array('commerce_redecard' => array('print_path' => COMMERCE_REDECARD_URL_CONF . '?' . $query_string)), 'setting');
       drupal_add_js(drupal_get_path('module', 'commerce_redecard') . '/js/print_cupom.js', 'file');
-      // Add and extra div.
+      
       $form = array();
+
       $form['print_cupom'] = array(
         '#type' => 'button',
         '#value' => t('Clique para visualizar o seu Comprovante'),
-        '#attributes' => array('class' => array('super-button'), 'onclick' => 'print_cupom();return false'),
+        '#attributes' => array('class' => array('super-button')),
       );
 
       $pane_form['commerce_print_cupom'] = array(
@@ -922,8 +933,9 @@ function commerce_redecard_completion_message_pane_checkout_form($form, &$form_s
       );
     }
     else {
-      drupal_goto('payment-again/' . $order->order_number);
+      drupal_set_message(t('Data transaction isn\'t available to this order. Please do your order again.'), 'error');
     }
   }
+
   return $pane_form;
 }
